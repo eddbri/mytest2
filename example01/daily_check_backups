@@ -1,0 +1,35 @@
+#!/bin/bash 
+
+#This script checks the disk space of the system and compares it with a predefined value. 
+#If the current disk space exceeds the defined value 
+#then it checks in backup locations and starts to find and remove directories with a date of five days or less from the current date. 
+#It covers from 5 days to 3 currently
+
+#Defining the variables 
+backup2=/home/backup2/*/
+backup=/home/tar-backups
+useage=$(df -h | grep "home" | awk '{ print $4 }'| sed s'/.$//')
+fullspace="90"
+DATE3=`date +%Y-%m-%d -d "3 days ago"`
+DATE4=`date +%Y-%m-%d -d "4 days ago"`
+DATE5=`date +%Y-%m-%d -d "5 days ago"`
+
+# Compairing the disk size 
+if [ "$useage" -gt "$fullspace" ]; then
+  touch /var/log/daily_check
+  # Once the useage has been checked it logs the current useage and begins removing the older backups 
+	echo "The current disk space of the home DIR is  $useage% -`date +%Y-%m-%d----%R`" >> /var/log/daily_check
+	find /home/tar-backups/$DATE5 -type d | xargs rm -rf
+	find /home/tar-backups/$DATE4 -type d | xargs rm -rf
+	#find /home/tar-backups/$DATE3 -type d | xargs rm -rf
+	find /home/backup2/*/$DATE5 -type d | xargs rm -rf
+	find /home/backup2/*/$DATE4 -type d | xargs rm -rf
+	#find /home/backup2/*/$DATE3 -type d | xargs rm -rf
+fi 
+
+ 
+
+# Logging the current new diskspace and timestamp
+echo "The new diskspace is now $useage% -`date +%Y-%m-%d----%R`" >> /var/log/daily_check
+
+exit
